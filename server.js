@@ -13,7 +13,8 @@ app.use(cors())
 const db = mysql.createConnection({
     host: process.env.DB_HOST, // "localhost"
     user: process.env.DB_USER, // "root"
-    database: process.env.DB_NAME // "docutracker"
+    database: process.env.DB_NAME, // "docutracker"
+    password: process.env.DB_PASS,
     // host: "localhost",
     // user: "root",
     // database: "docutracker"
