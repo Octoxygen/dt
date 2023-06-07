@@ -1,9 +1,9 @@
-// require("dotenv").config;
-
 import express from "express";
 import mysql from "mysql";
 import cors from "cors";
+import dotenv from "dotenv";
 
+dotenv.config()
 
 const app = express();
 
@@ -14,6 +14,9 @@ const db = mysql.createConnection({
     host: process.env.DB_HOST, // "localhost"
     user: process.env.DB_USER, // "root"
     database: process.env.DB_NAME // "docutracker"
+    // host: "localhost",
+    // user: "root",
+    // database: "docutracker"
 })
 
 const getDateToday = () => {
@@ -33,11 +36,17 @@ const generateID = (seq) => {
 
 app.get("/", (req, res) => {
     res.json("hello i am data")
+    console.log(process.env.DB_HOST)
+    console.log(process.env.DB_HOST)
+    console.log(process.env.DB_USER)
 })
 
 app.get("/users", (req, res) => {
     const q = "SELECT COUNT(document_id) as 'count' from `documents`";
     db.query(q, (err, data) => {
+        console.log(process.env.DB_NAME)
+        console.log(process.env.DB_HOST)
+        console.log(process.env.DB_USER)
         if (err) return res.json(err);
         return res.json(data[0].count);
     })
