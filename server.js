@@ -1,4 +1,4 @@
-// require('dotenv').config()
+// require("dotenv").config;
 
 import express from "express";
 import mysql from "mysql";
@@ -11,9 +11,9 @@ app.use(express.json())
 app.use(cors())
 
 const db = mysql.createConnection({
-    host: process.env(DB_HOST), // "localhost"
-    user: process.env(DB_USER), // "root"
-    database: process.env(DB_NAME) // "docutracker"
+    host: process.env.DB_HOST, // "localhost"
+    user: process.env.DB_USER, // "root"
+    database: process.env.DB_NAME // "docutracker"
 })
 
 const getDateToday = () => {
