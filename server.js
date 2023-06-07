@@ -11,9 +11,9 @@ app.use(express.json())
 app.use(cors())
 
 const db = mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    database: "docutracker"
+    host: process.env(DB_HOST), // "localhost"
+    user: process.env(DB_USER), // "root"
+    database: process.env(DB_NAME) // "docutracker"
 })
 
 const getDateToday = () => {
