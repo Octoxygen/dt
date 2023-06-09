@@ -185,7 +185,7 @@ app.get("/get-user-documents/:user", (req, res) => {
         if (err) return res.json(err);
     })
 
-    q = "SELECT b.*, th.transfer_department_id, d.document_title, d.date_created, d.creator, CONCAT(u.name_given, ' ', u.name_middle_initial, '. ', u.name_last) as 'name', dp.name as 'location' FROM a INNER JOIN b ON a.document_id = b.document_id INNER JOIN transfer_history th ON th.transfer_id = b.transfer_id INNER JOIN documents d on d.document_id = b.document_id INNER JOIN users u on d.creator = u.user_id INNER JOIN departments dp ON dp.department_id = th.transfer_department_id;"
+    q = "SELECT b.transfer_id, b.document_id, th.transfer_department_id, dp.name as 'location', th.received_by, CONCAT(tu.name_given, ' ', tu.name_middle_initial, '. ', tu.name_last) as 'receiver', th.date_received, d.document_title, d.date_created, d.creator, CONCAT(u.name_given, ' ', u.name_middle_initial, '. ', u.name_last) as 'name' FROM a INNER JOIN b ON a.document_id = b.document_id INNER JOIN transfer_history th ON th.transfer_id = b.transfer_id INNER JOIN documents d on d.document_id = b.document_id INNER JOIN users u on d.creator = u.user_id INNER JOIN users tu on tu.user_id = th.received_by INNER JOIN departments dp on dp.department_id = th.transfer_department_id ORDER BY th.date_received DESC;"
 
     db.query(q, (err, data) => {
         res.set('Access-Control-Allow-Origin', '*')
