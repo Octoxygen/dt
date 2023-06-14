@@ -59,7 +59,7 @@ app.post("/login", (req, res) => {
     const in_password = req.body.password;
     // console.log(in_username)
     // console.log(in_password)
-    const q = "SELECT * FROM `users` WHERE username = '" + in_username + "' AND password = '" + in_password + "'"
+    const q = "SELECT * FROM `users` WHERE username = '" + in_username + "' OR email = '" + in_username + "' AND password = '" + in_password + "'"
 
     db.query(q, (err, data) => {
         res.set('Access-Control-Allow-Origin', '*')
