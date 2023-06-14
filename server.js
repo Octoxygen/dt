@@ -228,6 +228,90 @@ app.get("/get-history/:id", (req, res) => {
     })
 })
 
+app.get("/get-roles", (req, res) => {
+    const q = "SELECT * from roles;"
+
+    db.query(q, (err, data) => {
+        res.set('Access-Control-Allow-Origin', '*')
+        if (err) return res.json(err);
+        return res.json(data)
+    })
+})
+
+app.get("/get-departments", (req, res) => {
+    const q = "SELECT * from departments;"
+
+    db.query(q, (err, data) => {
+        res.set('Access-Control-Allow-Origin', '*')
+        if (err) return res.json(err);
+        return res.json(data)
+    })
+})
+
+app.post("/add-user", (req, res) => {
+    const val = [
+        req.body.n_username,
+        req.body.n_email,
+        req.body.n_password,
+        req.body.n_first,
+        req.body.n_middle,
+        req.body.n_last,
+        req.body.n_role_id,
+        req.body.n_dept_id,
+    ]
+
+    const q = "INSERT INTO users (username, email, password, name_given, name_middle_initial, name_last, role, department_id) VALUES (?);"
+
+    db.query(q, [val], (err, data) => {
+        res.set('Access-Control-Allow-Origin', '*')
+        if (err) return res.json(err);
+        return res.json(data)
+    })
+})
+
+app.post("/add-department", (req, res) => {
+    const val = [
+        req.body.n_dept_name
+    ]
+
+    const q = "INSERT INTO departments (name) VALUES (?);"
+
+    db.query(q, [val], (err, data) => {
+        res.set('Access-Control-Allow-Origin', '*')
+        if (err) return res.json(err);
+        return res.json(data)
+    })
+})
+
+app.put("/edit-department", (req, res) => {
+    const val = [
+        req.body.e_dept_name,
+        req.body.s_dept_name,
+    ]
+
+    const q = "UPDATE departments SET name = ? WHERE name = ?;"
+
+    db.query(q, [...val], (err, data) => {
+        res.set('Access-Control-Allow-Origin', '*')
+        if (err) return res.json(err);
+        return res.json(data)
+    })
+}) 
+
+app.put("/delete-department", (req, res) => {
+    const val = [
+        req.body.s_dept_name,
+    ]
+
+    const q = "UPDATE departments SET status = 'D' WHERE name = ?;"
+
+    db.query(q, [...val], (err, data) => {
+        res.set('Access-Control-Allow-Origin', '*')
+        if (err) return res.json(err);
+        return res.json(data)
+    })
+}) 
+
 app.listen(8900, () => {
     console.log("Connected to database");
 })
