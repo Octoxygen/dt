@@ -312,6 +312,37 @@ app.put("/delete-department", (req, res) => {
     })
 }) 
 
+app.get("/get-users", (req, res) => {
+    const q = "SELECT u.*, r.name as 'role_name', d.name as 'department_name' FROM users u INNER JOIN roles r ON r.role_id = u.role INNER JOIN departments d ON d.department_id = u.department_id;"
+
+    db.query(q, (err, data) => {
+        res.set('Access-Control-Allow-Origin', '*')
+        if (err) return res.json(err);
+        return res.json(data)
+    })
+})
+
+app.put("/update-user", (req, res) => {
+    const val = [
+        req.body.e_username,
+        req.body.e_email,
+        req.body.e_password,
+        req.body.e_first,
+        req.body.e_middle,
+        req.body.e_last,
+        req.body.e_role_id,
+        req.body.e_dept_id,
+        req.body.e_id
+    ]
+    const q = "UPDATE users SET username = ?, email = ?, password = ?, name_given = ?, name_middle_initial = ?, name_last = ?,  role = ?, department_id = ? WHERE user_id = ?"
+
+    db.query(q, [...val], (err, data) => {
+        res.set('Access-Control-Allow-Origin', '*')
+        if (err) return res.json(err);
+        return res.json(data)
+    })
+})
+
 app.listen(8900, () => {
     console.log("Connected to database");
 })
