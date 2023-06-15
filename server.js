@@ -2,6 +2,7 @@ import express from "express";
 import mysql from "mysql";
 import cors from "cors";
 import dotenv from "dotenv";
+import nodemailer from "nodemailer";
 
 dotenv.config()
 
@@ -19,6 +20,15 @@ const db = mysql.createConnection({
     // user: "root",
     // database: "docutracker"
 })
+
+// let transporter = nodemailer.createTransport({
+//     host: 'smtp.ethereal.email',
+//     port: 587,
+//     auth: {
+//         user: 'reginald.mayer92@ethereal.email',
+//         pass: 'uA6uKwyAqXskTrWJAt'
+//     }
+// })
 
 const getDateToday = () => {
     let date = new Date()
@@ -65,7 +75,7 @@ app.post("/login", (req, res) => {
         res.set('Access-Control-Allow-Origin', '*')
         if (err) return res.json(err);
         return res.json({
-            test: data.length == 1? true: false,
+            test: data.length == 1 ? true : false,
             data,
         });
     })
@@ -296,7 +306,7 @@ app.put("/edit-department", (req, res) => {
         if (err) return res.json(err);
         return res.json(data)
     })
-}) 
+})
 
 app.put("/delete-department", (req, res) => {
     const val = [
@@ -310,7 +320,7 @@ app.put("/delete-department", (req, res) => {
         if (err) return res.json(err);
         return res.json(data)
     })
-}) 
+})
 
 app.get("/get-users", (req, res) => {
     const q = "SELECT u.*, r.name as 'role_name', d.name as 'department_name' FROM users u INNER JOIN roles r ON r.role_id = u.role INNER JOIN departments d ON d.department_id = u.department_id;"
@@ -340,6 +350,52 @@ app.put("/update-user", (req, res) => {
         res.set('Access-Control-Allow-Origin', '*')
         if (err) return res.json(err);
         return res.json(data)
+    })
+})
+
+app.post("/send-mailsx", (req, res) => {
+    let message = {
+        from: '"Docutracker" <docutracker.bulsu@gmail.com>',
+        to: "aricebelda@gmail.com",
+        subject: "Test",
+        text: "This is a drill"
+    }
+
+    transporter.sendMail(message).then((info) => {
+        return res.json({
+            msg: "email sent",
+            info: info.messageId,
+            preview: nodemailer.getTestMessageUrl(info)
+        })
+    }).catch(err => {
+        return res.json(err)
+    })
+})
+
+app.post("/send-mails", (req, res) => {
+    let config = {
+        service: 'gmail',
+        auth: {
+            user: process.env.M_MAIL,
+            pass: process.env.M_PASS
+        }
+    }
+
+    let transporter = nodemailer.createTransport(config)
+
+    let message = {
+        from: process.env.M_MAIL,
+        to: "aricebelda@gmail.com",
+        subject: "Test",
+        text: "This is a drill"
+    }
+
+    transporter.sendMail(message).then((info) => {
+        return res.json({
+            msg: "email sent",
+        })
+    }).catch(err => {
+        return res.json(err)
     })
 })
 
