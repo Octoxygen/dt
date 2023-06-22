@@ -3,6 +3,7 @@ import mysql from "mysql";
 import cors from "cors";
 import dotenv from "dotenv";
 import nodemailer from "nodemailer";
+import bcrypt from "bcrypt";
 
 dotenv.config()
 
@@ -69,7 +70,7 @@ app.post("/login", (req, res) => {
     const in_password = req.body.password;
     // console.log(in_username)
     // console.log(in_password)
-    const q = "SELECT * FROM `users` WHERE username = '" + in_username + "' OR email = '" + in_username + "' AND password = '" + in_password + "'"
+    const q = "SELECT u.*, d.name as 'location' FROM `users` u JOIN departments d ON d.department_id = u.department_id WHERE username = '" + in_username + "' OR email =  '" + in_password + "' AND password = 'in_password'"
 
     db.query(q, (err, data) => {
         res.set('Access-Control-Allow-Origin', '*')
@@ -372,7 +373,23 @@ app.post("/send-mailsx", (req, res) => {
     })
 })
 
+app.get("/get-receive-time/:id", (req, res) => {
+    const id = req.params.id
+
+    let q = "SELECT d.date_created FROM documents d WHERE d.document_id = ?"
+
+    db.query(q, [id], (err, data) => {
+        res.set('Access-Control-Allow-Origin', '*')
+        if (err) return res.json(err);
+        return res.json(data[0].date_created)
+    })
+})
+
 app.post("/send-mails", (req, res) => {
+    const recipients = req.body.recipients
+    const doc = req.body.newDocument
+    const date_received = new Date(req.body.date_received);
+
     let config = {
         service: 'gmail',
         auth: {
@@ -380,21 +397,34 @@ app.post("/send-mails", (req, res) => {
             pass: process.env.M_PASS
         }
     }
-
+    
     let transporter = nodemailer.createTransport(config)
 
     let message = {
         from: process.env.M_MAIL,
-        to: "aricebelda@gmail.com",
-        subject: "Test",
-        text: "This is a drill"
+        to: recipients,
+        subject: doc.title,
+        text: `Good day!
+
+BulSU Docutracker would like to keep you up-to-date with the location of the following document:
+    \tDocument Title: ` + doc.title + `
+    \tReceived by: ` + doc.creator_name + `
+    \tDepartment: ` + doc.origin_name + `
+    \tDate Received: ` + date_received.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) + ` ` + date_received.toLocaleTimeString() + `
+        
+You can track the document here:
+` + process.env.TRACKING_BASE_URL + `tracking/` + doc.id + `
+
+Thank you!`
     }
 
     transporter.sendMail(message).then((info) => {
         return res.json({
             msg: "email sent",
+            info: info.messageId,
         })
     }).catch(err => {
+        console.log("ERROR!")
         return res.json(err)
     })
 })
