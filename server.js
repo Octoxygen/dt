@@ -130,7 +130,9 @@ app.put("/publish", (req, res) => {
 })
 
 app.post("/add-initial-transfer", (req, res) => {
-    const q = "INSERT INTO `transfer_history` (`document_id`, `transfer_department_id`, `received_by`) VALUES (?)"
+    const uid = req.body.uid
+
+    var q = "INSERT INTO `transfer_history` (`document_id`, `transfer_department_id`, `received_by`) VALUES (?)"
 
     const val = [
         req.body.id,
@@ -138,18 +140,26 @@ app.post("/add-initial-transfer", (req, res) => {
         req.body.creator
     ]
 
-    console.log('History recorded');
-    console.log(val);
+    const msg = '[' + req.body.uname + '] added a new document [' + val[0] + '].'
 
     db.query(q, [val], (err, data) => {
         res.set('Access-Control-Allow-Origin', '*')
         if (err) return res.json(err);
-        return res.json("Origin added successfully")
+    })
+
+    var q = "INSERT INTO activity_logs (user_id, activity, description) VALUES (?, 'Add New Document', ?)"
+
+    db.query(q, [uid, msg], (err, data) => {
+        res.set('Access-Control-Allow-Origin', '*')
+        if (err) return res.json(err);
+        return res.json(data)
     })
 })
 
 app.post("/transfer", (req, res) => {
-    const q = "INSERT INTO `transfer_history` (`document_id`, `transfer_department_id`, `received_by`) VALUES (?)"
+    const uid = req.body.uid
+
+    var q = "INSERT INTO `transfer_history` (`document_id`, `transfer_department_id`, `received_by`) VALUES (?)"
 
     const val = [
         req.body.id,
@@ -157,13 +167,19 @@ app.post("/transfer", (req, res) => {
         req.body.creator
     ]
 
-    console.log('History recorded');
-    console.log(val);
+    const msg = '[' + req.body.uname + '] received the document [' + val[0] + '].'
 
     db.query(q, [val], (err, data) => {
         res.set('Access-Control-Allow-Origin', '*')
         if (err) return res.json(err);
-        return res.json("Origin added successfully")
+    })
+
+    var q = "INSERT INTO activity_logs (user_id, activity, description) VALUES (?, 'Receive Document', ?)"
+
+    db.query(q, [uid, msg], (err, data) => {
+        res.set('Access-Control-Allow-Origin', '*')
+        if (err) return res.json(err);
+        return res.json(data)
     })
 })
 
@@ -292,13 +308,22 @@ app.post("/add-user", (req, res) => {
 })
 
 app.put("/deactivate", (req, res) => {
-    const id = req.body.id
-    console.log('test')
-    console.log(id)
+    const uid = req.body.uid
 
-    const q = "UPDATE users SET account_status = 'D' WHERE user_id = ?"
+    const id = req.body.id
+
+    const msg = 'Administrator [' + req.body.uname + '] deactivated user [' + req.body.username + ']\'s account.'
+
+    var q = "UPDATE users SET account_status = 'D' WHERE user_id = ?"
 
     db.query(q, [id], (err, data) => {
+        res.set('Access-Control-Allow-Origin', '*')
+        if (err) return res.json(err);
+    })
+
+    var q = "INSERT INTO activity_logs (user_id, activity, description) VALUES (?, 'Deactivate User', ?)"
+
+    db.query(q, [uid, msg], (err, data) => {
         res.set('Access-Control-Allow-Origin', '*')
         if (err) return res.json(err);
         return res.json(data)
@@ -306,13 +331,24 @@ app.put("/deactivate", (req, res) => {
 })
 
 app.post("/add-department", (req, res) => {
+    const uid = req.body.uid
+
     const val = [
         req.body.n_dept_name
     ]
 
-    const q = "INSERT INTO departments (name) VALUES (?);"
+    const msg = 'Administrator [' + req.body.uname + '] created the department [' + val[0] + '].'
+
+    var q = "INSERT INTO departments (name) VALUES (?);"
 
     db.query(q, [val], (err, data) => {
+        res.set('Access-Control-Allow-Origin', '*')
+        if (err) return res.json(err);
+    })
+
+    var q = "INSERT INTO activity_logs (user_id, activity, description) VALUES (?, 'Add New Department', ?)"
+
+    db.query(q, [uid, msg], (err, data) => {
         res.set('Access-Control-Allow-Origin', '*')
         if (err) return res.json(err);
         return res.json(data)
@@ -320,14 +356,25 @@ app.post("/add-department", (req, res) => {
 })
 
 app.put("/edit-department", (req, res) => {
+    const uid = req.body.uid
+
     const val = [
         req.body.e_dept_name,
         req.body.s_dept_name,
     ]
 
-    const q = "UPDATE departments SET name = ? WHERE name = ?;"
+    const msg = 'Administrator [' + req.body.uname + '] changed the department [' + val[1] + ']\'s name to [' + val[0] + '].'
+
+    var q = "UPDATE departments SET name = ? WHERE name = ?;"
 
     db.query(q, [...val], (err, data) => {
+        res.set('Access-Control-Allow-Origin', '*')
+        if (err) return res.json(err);
+    })
+
+    var q = "INSERT INTO activity_logs (user_id, activity, description) VALUES (?, 'Edit Department', ?)"
+
+    db.query(q, [uid, msg], (err, data) => {
         res.set('Access-Control-Allow-Origin', '*')
         if (err) return res.json(err);
         return res.json(data)
@@ -335,13 +382,24 @@ app.put("/edit-department", (req, res) => {
 })
 
 app.put("/delete-department", (req, res) => {
+    const uid = req.body.uid
+
     const val = [
         req.body.s_dept_name,
     ]
 
-    const q = "UPDATE departments SET status = 'D' WHERE name = ?;"
+    const msg = 'Administrator [' + req.body.uname + '] deleted the department [' + req.body.username + '].'
+
+    var q = "UPDATE departments SET status = 'D' WHERE name = ?;"
 
     db.query(q, [...val], (err, data) => {
+        res.set('Access-Control-Allow-Origin', '*')
+        if (err) return res.json(err);
+    })
+
+    var q = "INSERT INTO activity_logs (user_id, activity, description) VALUES (?, 'Delete Department', ?)"
+
+    db.query(q, [uid, msg], (err, data) => {
         res.set('Access-Control-Allow-Origin', '*')
         if (err) return res.json(err);
         return res.json(data)
@@ -359,6 +417,8 @@ app.get("/get-users", (req, res) => {
 })
 
 app.put("/update-user", (req, res) => {
+    const uid = req.body.uid
+
     const val = [
         req.body.e_username,
         req.body.e_email,
@@ -370,9 +430,19 @@ app.put("/update-user", (req, res) => {
         req.body.e_dept_id,
         req.body.e_id
     ]
-    const q = "UPDATE users SET username = ?, email = ?, password = ?, name_given = ?, name_middle_initial = ?, name_last = ?,  role = ?, department_id = ? WHERE user_id = ?"
+
+    const msg = 'Administrator [' + req.body.uname + '] edited user [' + val[0] + ']\'s details.'
+
+    var q = "UPDATE users SET username = ?, email = ?, password = ?, name_given = ?, name_middle_initial = ?, name_last = ?,  role = ?, department_id = ? WHERE user_id = ?"
 
     db.query(q, [...val], (err, data) => {
+        res.set('Access-Control-Allow-Origin', '*')
+        if (err) return res.json(err);
+    })
+
+    var q = "INSERT INTO activity_logs (user_id, activity, description) VALUES (?, 'Edit User', ?)"
+
+    db.query(q, [uid, msg], (err, data) => {
         res.set('Access-Control-Allow-Origin', '*')
         if (err) return res.json(err);
         return res.json(data)
