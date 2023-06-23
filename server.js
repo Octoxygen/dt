@@ -277,7 +277,7 @@ app.get("/get-departments", (req, res) => {
 
 app.post("/add-user", (req, res) => {
     const uid = req.body.uid
-    
+
     const val = [
         req.body.n_username,
         req.body.n_email,
@@ -288,7 +288,7 @@ app.post("/add-user", (req, res) => {
         req.body.n_role_id,
         req.body.n_dept_id,
     ]
-    
+
     const msg = 'Administrator [' + req.body.uname + '] created an account for [' + val[0] + '].'
 
     var q = "INSERT INTO users (username, email, password, name_given, name_middle_initial, name_last, role, department_id) VALUES (?);"
@@ -521,6 +521,16 @@ Thank you!`
     }).catch(err => {
         console.log("ERROR!")
         return res.json(err)
+    })
+})
+
+app.get("/get-activity-logs", (req, res) => {
+    const q = "SELECT a.*, u.username FROM activity_logs a INNER JOIN users u ON u.user_id = a.user_id"
+
+    db.query(q, (err, data) => {
+        res.set('Access-Control-Allow-Origin', '*')
+        if (err) return res.json(err);
+        return res.json(data)
     })
 })
 
