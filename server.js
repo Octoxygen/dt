@@ -260,6 +260,8 @@ app.get("/get-departments", (req, res) => {
 })
 
 app.post("/add-user", (req, res) => {
+    const uid = req.body.uid
+    
     const val = [
         req.body.n_username,
         req.body.n_email,
@@ -270,10 +272,33 @@ app.post("/add-user", (req, res) => {
         req.body.n_role_id,
         req.body.n_dept_id,
     ]
+    
+    const msg = 'Administrator [' + req.body.uname + '] created an account for [' + val[0] + '].'
 
-    const q = "INSERT INTO users (username, email, password, name_given, name_middle_initial, name_last, role, department_id) VALUES (?);"
+    var q = "INSERT INTO users (username, email, password, name_given, name_middle_initial, name_last, role, department_id) VALUES (?);"
 
     db.query(q, [val], (err, data) => {
+        res.set('Access-Control-Allow-Origin', '*')
+        if (err) return res.json(err);
+    })
+
+    var q = "INSERT INTO activity_logs (user_id, activity, description) VALUES (?, 'Add New User', ?)"
+
+    db.query(q, [uid, msg], (err, data) => {
+        res.set('Access-Control-Allow-Origin', '*')
+        if (err) return res.json(err);
+        return res.json(data)
+    })
+})
+
+app.put("/deactivate", (req, res) => {
+    const id = req.body.id
+    console.log('test')
+    console.log(id)
+
+    const q = "UPDATE users SET account_status = 'D' WHERE user_id = ?"
+
+    db.query(q, [id], (err, data) => {
         res.set('Access-Control-Allow-Origin', '*')
         if (err) return res.json(err);
         return res.json(data)
@@ -397,7 +422,7 @@ app.post("/send-mails", (req, res) => {
             pass: process.env.M_PASS
         }
     }
-    
+
     let transporter = nodemailer.createTransport(config)
 
     let message = {
