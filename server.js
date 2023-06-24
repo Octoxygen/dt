@@ -245,13 +245,22 @@ app.get("/get-all-documents", (req, res) => {
 
 app.get("/get-history/:id", (req, res) => {
     const id = req.params.id
+    var docu_name;
 
-    const q = "SELECT th.transfer_id, th.received_by, CONCAT(u.name_given, ' ', u.name_middle_initial, '. ', u.name_last) as 'name', th.date_received, dc.name AS 'location', LAG(th.date_received, -1) OVER (ORDER BY th.date_received) AS 'date_departed' FROM transfer_history th INNER JOIN documents d ON d.document_id = th.document_id AND d.document_id = ? INNER JOIN users u ON u.user_id = th.received_by INNER JOIN departments dc ON dc.department_id = th.transfer_department_id ORDER BY date_received DESC"
+    var q = "SELECT document_title FROM documents WHERE document_id = ?"
 
     db.query(q, id, (err, data) => {
         res.set('Access-Control-Allow-Origin', '*')
         if (err) return res.json(err);
-        return res.json(data)
+        docu_name = data[0].document_title
+    })
+
+    var q = "SELECT th.transfer_id, th.received_by, CONCAT(u.name_given, ' ', u.name_middle_initial, '. ', u.name_last) as 'name', th.date_received, dc.name AS 'location', LAG(th.date_received, -1) OVER (ORDER BY th.date_received) AS 'date_departed' FROM transfer_history th INNER JOIN documents d ON d.document_id = th.document_id AND d.document_id = ? INNER JOIN users u ON u.user_id = th.received_by INNER JOIN departments dc ON dc.department_id = th.transfer_department_id ORDER BY date_received DESC"
+
+    db.query(q, id, (err, data) => {
+        res.set('Access-Control-Allow-Origin', '*')
+        if (err) return res.json(err);
+        return res.json({data, docu_name})
     })
 })
 
@@ -531,6 +540,29 @@ app.get("/get-activity-logs", (req, res) => {
         res.set('Access-Control-Allow-Origin', '*')
         if (err) return res.json(err);
         return res.json(data)
+    })
+})
+
+app.get("/get-statistics", (req, res) => {
+    var q = "SELECT d.department_id, d.name, COUNT(t.transfer_department_id) as 'total_documents', COUNT(DISTINCT t.document_id) as 'unique_documents' FROM departments d LEFT JOIN transfer_history t on d.department_id = t.transfer_department_id GROUP BY d.name"
+
+    var docCounts;
+
+    db.query(q, (err, data) => {
+        res.set('Access-Control-Allow-Origin', '*')
+        if (err) return res.json(err);
+        docCounts = data
+    })
+
+    q = "SELECT t.transfer_id, t.document_id, t.transfer_department_id, t.date_received, LAG(t.date_received, -1) OVER ( PARTITION BY document_id ORDER BY date_received ) date_departed FROM `transfer_history` t ORDER BY `t`.`transfer_department_id` ASC, `t`.`document_id` ASC;"
+
+    var holdTime;
+
+    db.query(q, (err, data) => {
+        res.set('Access-Control-Allow-Origin', '*')
+        if (err) return res.json(err);
+        holdTime = data
+        return res.json({holdTime, docCounts})
     })
 })
 
