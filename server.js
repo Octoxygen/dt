@@ -260,7 +260,7 @@ app.get("/get-history/:id", (req, res) => {
     db.query(q, id, (err, data) => {
         res.set('Access-Control-Allow-Origin', '*')
         if (err) return res.json(err);
-        return res.json({data, docu_name})
+        return res.json({ data, docu_name })
     })
 })
 
@@ -562,7 +562,19 @@ app.get("/get-statistics", (req, res) => {
         res.set('Access-Control-Allow-Origin', '*')
         if (err) return res.json(err);
         holdTime = data
-        return res.json({holdTime, docCounts})
+        return res.json({ holdTime, docCounts })
+    })
+})
+
+app.get("/identify-document/:docID", (req, res) => {
+    const docID = req.params.docID
+
+    const q = "SELECT COUNT(document_id) as 'result' FROM documents WHERE document_id = ?"
+
+    db.query(q, docID, (err, data) => {
+        res.set('Access-Control-Allow-Origin', '*')
+        if (err) return res.json(err);
+        return res.json(data)
     })
 })
 
