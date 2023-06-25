@@ -578,6 +578,18 @@ app.get("/identify-document/:docID", (req, res) => {
     })
 })
 
+app.get("/get-latest-location/:docID", (req, res) => {
+    const docID = req.params.docID
+
+    const q = "SELECT * FROM transfer_history t WHERE t.document_id = ? ORDER BY t.date_received DESC LIMIT 1"
+
+    db.query(q, docID, (err, data) => {
+        res.set('Access-Control-Allow-Origin', '*')
+        if (err) return res.json(err);
+        return res.json(data)
+    })
+})
+
 app.listen(8900, () => {
     console.log("Connected to database");
 })
