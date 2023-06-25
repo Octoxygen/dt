@@ -275,7 +275,7 @@ app.get("/get-roles", (req, res) => {
 })
 
 app.get("/get-departments", (req, res) => {
-    const q = "SELECT * from departments;"
+    const q = "SELECT * from departments WHERE status != 'D';"
 
     db.query(q, (err, data) => {
         res.set('Access-Control-Allow-Origin', '*')
