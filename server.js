@@ -65,14 +65,49 @@ app.get("/users", (req, res) => {
     })
 })
 
+app.post("/validate-credentials", (req, res) => {
+    const in_username = req.body.username;
+    const in_password = req.body.password;
+
+    var q = "SELECT password FROM users WHERE (username = '" + in_username + "' OR email =  '" + in_username + "')"
+
+    var pass = true
+
+    db.query(q, (err, data) => {
+        res.set('Access-Control-Allow-Origin', '*')
+        if (err) return res.json(err);
+        if (data.length != 1) {
+            console.log('user not found')
+            pass = false
+            return res.json({
+                err: { username: true, password: false },
+            });
+        } else {
+            const get_pass = data[0].password
+            if (get_pass != in_password) {
+                console.log('incorrect password')
+                pass = false
+                return res.json({
+                    err: { username: false, password: true },
+                });
+            } else {
+                console.log('credentials valid')
+                return res.json({
+                    err: { username: false, password: false },
+                });
+            }
+        }
+    })
+})
+
 app.post("/login", (req, res) => {
     const in_username = req.body.username;
     const in_password = req.body.password;
-    // console.log(in_username)
-    // console.log(in_password)
-    const q = "SELECT u.*, d.name as 'location' FROM `users` u JOIN departments d ON d.department_id = u.department_id WHERE username = '" + in_username + "' OR email =  '" + in_password + "' AND password = 'in_password'"
+
+    var q = "SELECT u.*, d.name as 'location' FROM `users` u JOIN departments d ON d.department_id = u.department_id WHERE (username = '" + in_username + "' OR email =  '" + in_username + "') AND password = '" + in_password + "'"
 
     db.query(q, (err, data) => {
+        console.log('trying to set headers')
         res.set('Access-Control-Allow-Origin', '*')
         if (err) return res.json(err);
         return res.json({
