@@ -284,7 +284,26 @@ app.get("/get-departments", (req, res) => {
     })
 })
 
-app.post("/add-user", (req, res) => {
+app.post("/check-new-credentials", (req, res) => {
+    // CHECK IF CREDENTIALS ARE VALID
+    const chk = [
+        req.body.n_email,
+        req.body.n_username
+    ]
+
+    console.log(chk)
+
+    var q = "SELECT SUM(CASE WHEN u.email = ? THEN 1 ELSE 0 END) AS email, SUM(CASE WHEN u.username = ? THEN 1 ELSE 0 END) AS username FROM `users` u WHERE u.email = ? OR u.username = ?; "
+
+    db.query(q, [...chk, ...chk], (err, data) => {
+        res.set('Access-Control-Allow-Origin', '*')
+        if (err) return res.json(err);
+        console.log(data)
+        return res.json(data)
+    })
+})
+
+app.post("/add-user", async (req, res) => {
     const uid = req.body.uid
 
     const val = [
@@ -331,6 +350,29 @@ app.put("/deactivate", (req, res) => {
     })
 
     var q = "INSERT INTO activity_logs (user_id, activity, description) VALUES (?, 'Deactivate User', ?)"
+
+    db.query(q, [uid, msg], (err, data) => {
+        res.set('Access-Control-Allow-Origin', '*')
+        if (err) return res.json(err);
+        return res.json(data)
+    })
+})
+
+app.put("/reactivate", (req, res) => {
+    const uid = req.body.uid
+
+    const id = req.body.id
+
+    const msg = 'Administrator [' + req.body.uname + '] re-activated user [' + req.body.username + ']\'s account.'
+
+    var q = "UPDATE users SET account_status = 'A' WHERE user_id = ?"
+
+    db.query(q, [id], (err, data) => {
+        res.set('Access-Control-Allow-Origin', '*')
+        if (err) return res.json(err);
+    })
+
+    var q = "INSERT INTO activity_logs (user_id, activity, description) VALUES (?, 'Re-activate User', ?)"
 
     db.query(q, [uid, msg], (err, data) => {
         res.set('Access-Control-Allow-Origin', '*')
