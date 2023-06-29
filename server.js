@@ -369,12 +369,14 @@ app.put("/edit-department", (req, res) => {
 
     const val = [
         req.body.e_dept_name,
+        req.body.e_dept_contact,
+        req.body.e_dept_location,
         req.body.s_dept_name,
     ]
 
     const msg = 'Administrator [' + req.body.uname + '] changed the department [' + val[1] + ']\'s name to [' + val[0] + '].'
 
-    var q = "UPDATE departments SET name = ? WHERE name = ?;"
+    var q = "UPDATE departments SET name = ?, contact  = ?, location = ? WHERE name = ?;"
 
     db.query(q, [...val], (err, data) => {
         res.set('Access-Control-Allow-Origin', '*')
