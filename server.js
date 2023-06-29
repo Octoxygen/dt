@@ -287,8 +287,8 @@ app.get("/get-departments", (req, res) => {
 app.post("/check-new-credentials", (req, res) => {
     // CHECK IF CREDENTIALS ARE VALID
     const chk = [
-        req.body.n_email,
-        req.body.n_username
+        req.body.email,
+        req.body.username
     ]
 
     console.log(chk)
