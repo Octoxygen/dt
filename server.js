@@ -3,6 +3,7 @@ import mysql from "mysql";
 import cors from "cors";
 import dotenv from "dotenv";
 import nodemailer from "nodemailer";
+import crypto from "crypto"
 import bcrypt from "bcrypt";
 
 dotenv.config()
@@ -17,19 +18,7 @@ const db = mysql.createConnection({
     user: process.env.DB_USER, // "root"
     database: process.env.DB_NAME, // "docutracker"
     password: process.env.DB_PASS,
-    // host: "localhost",
-    // user: "root",
-    // database: "docutracker"
 })
-
-// let transporter = nodemailer.createTransport({
-//     host: 'smtp.ethereal.email',
-//     port: 587,
-//     auth: {
-//         user: 'reginald.mayer92@ethereal.email',
-//         pass: 'uA6uKwyAqXskTrWJAt'
-//     }
-// })
 
 const getDateToday = () => {
     let date = new Date()
@@ -107,13 +96,152 @@ app.post("/login", (req, res) => {
     var q = "SELECT u.*, d.name as 'location' FROM `users` u JOIN departments d ON d.department_id = u.department_id WHERE (username = '" + in_username + "' OR email =  '" + in_username + "') AND password = '" + in_password + "'"
 
     db.query(q, (err, data) => {
-        console.log('trying to set headers')
         res.set('Access-Control-Allow-Origin', '*')
         if (err) return res.json(err);
         return res.json({
             test: data.length == 1 ? true : false,
             data,
         });
+    })
+})
+
+app.get("/check-email/:email", (req, res) => {
+    const email = req.params.email
+
+    const q = "SELECT user_id FROM users WHERE email = ?"
+
+    db.query(q, [email], (err, data) => {
+        res.set('Access-Control-Allow-Origin', '*')
+        if (err) return res.json(err);
+        return res.json(data);
+    })
+})
+
+app.post("/check-requests", (req, res) => {
+    const uid = req.body.uid
+
+    const q = "SELECT COUNT(req_id) AS 'count' FROM requests WHERE user_id = ?"
+
+    db.query(q, [uid], (err, data) => {
+        res.set('Access-Control-Allow-Origin', '*')
+        if (err) return res.json(err);
+        return res.json(data);
+    })
+})
+
+app.post("/create-request", (req, res) => {
+    const uid = req.body.uid
+
+    const issued_at = new Date()
+    const raw_expires_at = new Date(issued_at.getTime() + 10 * 60000)
+    const expires_at = new Date(raw_expires_at.getTime() + 2.88e+7)
+
+    const key = crypto.randomUUID()
+
+    const q = "INSERT INTO requests (user_id, request_key, expires_at) VALUES (?, ?, STR_TO_DATE(?,'%Y-%m-%dT%T.%fZ'));;"
+
+    db.query(q, [uid, key, expires_at.toISOString()], (err, data) => {
+        res.set('Access-Control-Allow-Origin', '*')
+        if (err) return res.json(err);
+        return res.json(key);
+    })
+})
+
+app.post("/get-request", (req, res) => {
+    const uid = req.body.uid
+
+    const q = "SELECT expires_at FROM requests WHERE user_id = ?"
+
+    db.query(q, [uid], (err, data) => {
+        res.set('Access-Control-Allow-Origin', '*')
+        if (err) return res.json(err);
+        return res.json(data);
+    })
+})
+
+app.post("/delete-request", (req, res) => {
+    const uid = req.body.uid
+
+    const q = "DELETE FROM `requests` WHERE `requests`.`user_id` = ?"
+
+    console.log('deleting request')
+    db.query(q, [uid], (err, data) => {
+        res.set('Access-Control-Allow-Origin', '*')
+        if (err) return res.json(err);
+        return res.json(data);
+    })
+})
+
+app.post("/validate-request", (req, res) => {
+    const key = req.body.key
+
+    const q = "SELECT r.*, CONCAT(u.name_given, ' ', u.name_middle_initial, '. ', u.name_last) AS 'name' FROM requests r JOIN users u ON u.user_id = r.user_id WHERE r.request_key = ?"
+
+    db.query(q, [key], (err, data) => {
+        res.set('Access-Control-Allow-Origin', '*')
+        if (err) return res.json(err);
+        return res.json(data);
+    })
+})
+
+app.post("/change-password", (req, res) => {
+    const uid = req.body.uid
+    const newPass = req.body.newPass
+
+    var q = "UPDATE users SET password = ? WHERE user_id = ?"
+
+    db.query(q, [newPass, uid], (err, data) => {
+        res.set('Access-Control-Allow-Origin', '*')
+        if (err) return res.json(err);
+    })
+
+    const msg = '[' + req.body.name + '] changed their password.'
+
+    var q = "INSERT INTO activity_logs (user_id, activity, description) VALUES (?, 'Change Password', ?)"
+
+    db.query(q, [uid, msg], (err, data) => {
+        res.set('Access-Control-Allow-Origin', '*')
+        if (err) return res.json(err);
+        return res.json(true)
+    })
+})
+
+app.post("/send-pw-change-mail", (req, res) => {
+    const email = req.body.email
+    const link = req.body.key;
+
+    let config = {
+        service: 'gmail',
+        auth: {
+            user: process.env.M_MAIL,
+            pass: process.env.M_PASS
+        }
+    }
+
+    let transporter = nodemailer.createTransport(config)
+
+    let message = {
+        from: process.env.M_MAIL,
+        to: email,
+        subject: "Docutracker Password Change",
+        text: `Good day!
+
+To change your password, click the following link:
+` + process.env.TRACKING_BASE_URL + `passwordReset/` + link + `
+        
+The link will only be active for 10 minutes. After which, you need to make another request to change your password. If you did note make this request, you may ignore this message.
+
+Thank you!`
+    }
+
+    transporter.sendMail(message).then((info) => {
+        return res.json({
+            msg: "email sent",
+            info: info.messageId,
+        })
+    }).catch(err => {
+        console.log("ERROR!")
+        return res.json(err)
     })
 })
 
