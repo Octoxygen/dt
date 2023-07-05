@@ -548,12 +548,14 @@ app.post("/add-department", (req, res) => {
     const uid = req.body.uid
 
     const val = [
-        req.body.n_dept_name
+        req.body.n_dept_name,
+        req.body.n_dept_contact,
+        req.body.n_dept_location,
     ]
 
     const msg = 'Administrator [' + req.body.uname + '] created the department [' + val[0] + '].'
 
-    var q = "INSERT INTO departments (name) VALUES (?);"
+    var q = "INSERT INTO departments (name, contact, location) VALUES (?);"
 
     db.query(q, [val], (err, data) => {
         res.set('Access-Control-Allow-Origin', '*')
