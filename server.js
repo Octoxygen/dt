@@ -13,6 +13,12 @@ const app = express();
 app.use(express.json())
 app.use(cors())
 
+app.use(function(req, res, next) {
+    res.header("Access-Control-Allow-Origin", process.env.REQ_URL); // update to match the domain you will make the request from
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    next();
+  });
+
 const db = mysql.createConnection({
     host: process.env.DB_HOST, // "localhost"
     user: process.env.DB_USER, // "root"
@@ -287,6 +293,7 @@ app.put("/publish", (req, res) => {
     ]
 
     db.query(q, [...val], (err, data) => {
+        res.set('Access-Control-Allow-Origin', '*')
         if (err) return res.json(err);
         return res.json("Document added successfully!");
     })
