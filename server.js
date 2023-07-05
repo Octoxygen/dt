@@ -719,9 +719,9 @@ app.post("/send-mails", (req, res) => {
 
 BulSU Docutracker would like to keep you up-to-date with the location of the following document:
     \tDocument Title: ` + doc.title + `
-    \tReceived by: ` + doc.creator_name + `
+    \tCreated by: ` + doc.creator_name + `
     \tDepartment: ` + doc.origin_name + `
-    \tDate Received: ` + date_received.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) + ` ` + date_received.toLocaleTimeString() + `
+    \tDate Received: ` + date_received.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) + ` ` + date_received.toLocaleTimeString(undefined, { timeStyle: 'short' }) + `
         
 You can track the document here:
 ` + process.env.TRACKING_BASE_URL + `tracking/` + doc.id + `
