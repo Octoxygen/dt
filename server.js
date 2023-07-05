@@ -362,10 +362,8 @@ app.get("/get-user-documents/:user", (req, res) => {
     db.query(q, (err, data) => {
         res.set('Access-Control-Allow-Origin', '*')
         if (err) return res.json(err);
-    }).then(
-        console.log('test')
-    )
-
+    })
+    
     var q = "DROP TEMPORARY TABLE IF EXISTS b;"
     db.query(q, (err, data) => {
         res.set('Access-Control-Allow-Origin', '*')
