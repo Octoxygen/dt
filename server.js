@@ -409,21 +409,28 @@ app.get("/get-all-documents", (req, res) => {
 app.get("/get-history/:id", (req, res) => {
     const id = req.params.id
     var docu_name;
+    var pass = true;
 
     var q = "SELECT document_title FROM documents WHERE document_id = ?"
 
     db.query(q, id, (err, data) => {
         res.set('Access-Control-Allow-Origin', '*')
         if (err) return res.json(err);
-        docu_name = data[0].document_title
+        if (data.length > 0) {
+            docu_name = data[0].document_title
+        } else {
+            pass = false
+        }
     })
+
+    if (!pass) return 
 
     var q = "SELECT th.transfer_id, th.received_by, CONCAT(u.name_given, ' ', u.name_middle_initial, '. ', u.name_last) as 'name', th.date_received, dc.name AS 'location', LAG(th.date_received, -1) OVER (ORDER BY th.date_received) AS 'date_departed' FROM transfer_history th INNER JOIN documents d ON d.document_id = th.document_id AND d.document_id = ? INNER JOIN users u ON u.user_id = th.received_by INNER JOIN departments dc ON dc.department_id = th.transfer_department_id ORDER BY date_received DESC"
 
     db.query(q, id, (err, data) => {
         res.set('Access-Control-Allow-Origin', '*')
         if (err) return res.json(err);
-        return res.json({ data, docu_name })
+        return res.json({ data, docu_name, id })
     })
 })
 
