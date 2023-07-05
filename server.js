@@ -699,7 +699,11 @@ app.get("/get-receive-time/:id", (req, res) => {
 app.post("/send-mails", (req, res) => {
     const recipients = req.body.recipients
     const doc = req.body.newDocument
-    const date_received = new Date(req.body.date_received);
+    const date_received = new Date(req.body.date_received)
+    // console.log(new Date(date_received.getTime()).toLocaleTimeString())
+    // console.log(new Date(date_received.getTime() + +process.env.OFFSET).toLocaleTimeString())
+    // console.log(process.env.OFFSET)
+    // console.log(+date_received.getTime() + +process.env.OFFSET)
 
     let config = {
         service: 'gmail',
@@ -721,7 +725,7 @@ BulSU Docutracker would like to keep you up-to-date with the location of the fol
     \tDocument Title: ` + doc.title + `
     \tCreated by: ` + doc.creator_name + `
     \tDepartment: ` + doc.origin_name + `
-    \tDate Received: ` + date_received.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) + ` ` + date_received.toLocaleTimeString(undefined, { timeStyle: 'short' }) + `
+    \tDate Received: ` + date_received.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) + ` ` + new Date(date_received.getTime() + +process.env.OFFSET).toLocaleTimeString() + `
         
 You can track the document here:
 ` + process.env.TRACKING_BASE_URL + `tracking/` + doc.id + `
