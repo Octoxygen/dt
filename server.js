@@ -338,6 +338,8 @@ app.post("/transfer", (req, res) => {
     ]
 
     const msg = '[' + req.body.uname + '] received the document [' + val[0] + '].'
+    
+    console.log('TRANSFER 1')
 
     db.query(q, [val], (err, data) => {
         res.set('Access-Control-Allow-Origin', '*')
@@ -345,6 +347,8 @@ app.post("/transfer", (req, res) => {
     })
 
     var q = "INSERT INTO activity_logs (user_id, activity, description) VALUES (?, 'Receive Document', ?)"
+
+    console.log('TRANSFER 2')
 
     db.query(q, [uid, msg], (err, data) => {
         res.set('Access-Control-Allow-Origin', '*')
