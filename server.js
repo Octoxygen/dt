@@ -181,7 +181,7 @@ app.post("/delete-request", (req, res) => {
 app.post("/validate-request", (req, res) => {
     const key = req.body.key
 
-    const q = "SELECT r.*, CONCAT(u.name_given, ' ', u.name_middle_initial, '. ', u.name_last) AS 'name' FROM requests r JOIN users u ON u.user_id = r.user_id WHERE r.request_key = ?"
+    const q = "SELECT r.*, CONCAT(u.name_given, ' ', IF(LENGTH(u.name_middle_initial), u.name_middle_initial, ''), IF(LENGTH(u.name_middle_initial), '. ', ''), u.name_last) AS 'name' FROM requests r JOIN users u ON u.user_id = r.user_id WHERE r.request_key = ?"
 
     db.query(q, [key], (err, data) => {
         res.set('Access-Control-Allow-Origin', '*')
@@ -386,7 +386,7 @@ app.get("/get-user-documents/:user", (req, res) => {
         if (err) return res.json(err);
     })
 
-    q = "SELECT b.transfer_id, b.document_id, th.transfer_department_id, dp.name as 'location', th.received_by, CONCAT(tu.name_given, ' ', tu.name_middle_initial, '. ', tu.name_last) as 'receiver', th.date_received, d.document_title, d.date_created, d.creator, CONCAT(u.name_given, ' ', u.name_middle_initial, '. ', u.name_last) as 'name' FROM a INNER JOIN b ON a.document_id = b.document_id INNER JOIN transfer_history th ON th.transfer_id = b.transfer_id INNER JOIN documents d on d.document_id = b.document_id INNER JOIN users u on d.creator = u.user_id INNER JOIN users tu on tu.user_id = th.received_by INNER JOIN departments dp on dp.department_id = th.transfer_department_id ORDER BY th.date_received DESC;"
+    q = "SELECT b.transfer_id, b.document_id, th.transfer_department_id, dp.name as 'location', th.received_by, CONCAT(tu.name_given, ' ', IF(LENGTH(tu.name_middle_initial), tu.name_middle_initial, ''), IF(LENGTH(tu.name_middle_initial), '. ', ''), tu.name_last) as 'receiver', th.date_received, d.document_title, d.date_created, d.creator, CONCAT(u.name_given, ' ', IF(LENGTH(u.name_middle_initial), u.name_middle_initial, ''), IF(LENGTH(u.name_middle_initial), '. ', ''), u.name_last) as 'name' FROM a INNER JOIN b ON a.document_id = b.document_id INNER JOIN transfer_history th ON th.transfer_id = b.transfer_id INNER JOIN documents d on d.document_id = b.document_id INNER JOIN users u on d.creator = u.user_id INNER JOIN users tu on tu.user_id = th.received_by INNER JOIN departments dp on dp.department_id = th.transfer_department_id ORDER BY th.date_received DESC;"
 
     db.query(q, (err, data) => {
         res.set('Access-Control-Allow-Origin', '*')
@@ -408,7 +408,7 @@ app.get("/get-all-documents", (req, res) => {
         if (err) return res.json(err);
     })
 
-    q = "SELECT d.document_id, d.document_title, d.date_created, d.creator, CONCAT(u.name_given, ' ', u.name_middle_initial, '. ', u.name_last) as 'name', dp.name AS 'location', ld.received_by FROM documents d INNER JOIN latest_dates ld USING(document_id) INNER JOIN departments dp ON ld.transfer_department_id = dp.department_id INNER JOIN users u ON d.creator = u.user_id ORDER BY d.date_created;"
+    q = "SELECT d.document_id, d.document_title, d.date_created, d.creator, CONCAT(u.name_given, ' ', IF(LENGTH(u.name_middle_initial), u.name_middle_initial, ''), IF(LENGTH(u.name_middle_initial), '. ', ''), u.name_last) as 'name', dp.name AS 'location', ld.received_by FROM documents d INNER JOIN latest_dates ld USING(document_id) INNER JOIN departments dp ON ld.transfer_department_id = dp.department_id INNER JOIN users u ON d.creator = u.user_id ORDER BY d.date_created DESC;"
 
     db.query(q, (err, data) => {
         res.set('Access-Control-Allow-Origin', '*')
@@ -436,7 +436,7 @@ app.get("/get-history/:id", (req, res) => {
 
     if (!pass) return 
 
-    var q = "SELECT th.transfer_id, th.received_by, CONCAT(u.name_given, ' ', u.name_middle_initial, '. ', u.name_last) as 'name', th.date_received, dc.name AS 'location', LAG(th.date_received, -1) OVER (ORDER BY th.date_received) AS 'date_departed' FROM transfer_history th INNER JOIN documents d ON d.document_id = th.document_id AND d.document_id = ? INNER JOIN users u ON u.user_id = th.received_by INNER JOIN departments dc ON dc.department_id = th.transfer_department_id ORDER BY date_received DESC"
+    var q = "SELECT th.transfer_id, th.received_by, CONCAT(u.name_given, ' ', IF(LENGTH(u.name_middle_initial), u.name_middle_initial, ''), IF(LENGTH(u.name_middle_initial), '. ', ''), u.name_last) as 'name', th.date_received, dc.name AS 'location', LAG(th.date_received, -1) OVER (ORDER BY th.date_received) AS 'date_departed' FROM transfer_history th INNER JOIN documents d ON d.document_id = th.document_id AND d.document_id = ? INNER JOIN users u ON u.user_id = th.received_by INNER JOIN departments dc ON dc.department_id = th.transfer_department_id ORDER BY date_received DESC"
 
     db.query(q, id, (err, data) => {
         res.set('Access-Control-Allow-Origin', '*')
