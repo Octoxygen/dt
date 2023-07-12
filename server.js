@@ -340,7 +340,7 @@ app.post("/transfer", (req, res) => {
         complete ? 'C' : 'N'
     ]
 
-    const msg = '[' + req.body.uname + '] received the document [' + val[0] + '].'
+    const msg = '[' + req.body.uname + '] ' + (complete? 'commpleted' : 'received') + ' the document [' + val[0] + '].'
 
     console.log('TRANSFER 1')
 
@@ -389,7 +389,7 @@ app.get("/get-user-documents/:user", (req, res) => {
         if (err) return res.json(err);
     })
 
-    q = "SELECT b.transfer_id, b.document_id, th.transfer_department_id, dp.name as 'location', th.received_by, CONCAT(tu.name_given, ' ', IF(LENGTH(tu.name_middle_initial), tu.name_middle_initial, ''), IF(LENGTH(tu.name_middle_initial), '. ', ''), tu.name_last) as 'receiver', th.date_received, d.document_title, d.date_created, d.creator, CONCAT(u.name_given, ' ', IF(LENGTH(u.name_middle_initial), u.name_middle_initial, ''), IF(LENGTH(u.name_middle_initial), '. ', ''), u.name_last) as 'name' FROM a INNER JOIN b ON a.document_id = b.document_id INNER JOIN transfer_history th ON th.transfer_id = b.transfer_id INNER JOIN documents d on d.document_id = b.document_id INNER JOIN users u on d.creator = u.user_id INNER JOIN users tu on tu.user_id = th.received_by INNER JOIN departments dp on dp.department_id = th.transfer_department_id ORDER BY th.date_received DESC;"
+    q = "SELECT b.transfer_id, b.document_id, th.transfer_department_id, dp.name as 'location', th.received_by, CONCAT(tu.name_given, ' ', IF(LENGTH(tu.name_middle_initial), tu.name_middle_initial, ''), IF(LENGTH(tu.name_middle_initial), '. ', ''), tu.name_last) as 'receiver', th.date_received, d.document_title, d.date_created, d.creator, CONCAT(u.name_given, ' ', IF(LENGTH(u.name_middle_initial), u.name_middle_initial, ''), IF(LENGTH(u.name_middle_initial), '. ', ''), u.name_last) as 'name', th.completed FROM a INNER JOIN b ON a.document_id = b.document_id INNER JOIN transfer_history th ON th.transfer_id = b.transfer_id INNER JOIN documents d on d.document_id = b.document_id INNER JOIN users u on d.creator = u.user_id INNER JOIN users tu on tu.user_id = th.received_by INNER JOIN departments dp on dp.department_id = th.transfer_department_id ORDER BY th.date_received DESC;"
 
     db.query(q, (err, data) => {
         res.set('Access-Control-Allow-Origin', '*')
@@ -411,7 +411,7 @@ app.get("/get-all-documents", (req, res) => {
         if (err) return res.json(err);
     })
 
-    q = "SELECT d.document_id, d.document_title, d.date_created, d.creator, CONCAT(u.name_given, ' ', IF(LENGTH(u.name_middle_initial), u.name_middle_initial, ''), IF(LENGTH(u.name_middle_initial), '. ', ''), u.name_last) as 'name', dp.name AS 'location', ld.received_by FROM documents d INNER JOIN latest_dates ld USING(document_id) INNER JOIN departments dp ON ld.transfer_department_id = dp.department_id INNER JOIN users u ON d.creator = u.user_id ORDER BY d.date_created DESC;"
+    q = "SELECT d.document_id, d.document_title, d.date_created, d.creator, CONCAT(u.name_given, ' ', IF(LENGTH(u.name_middle_initial), u.name_middle_initial, ''), IF(LENGTH(u.name_middle_initial), '. ', ''), u.name_last) as 'name', dp.name AS 'location', ld.received_by, ld.completed FROM documents d INNER JOIN latest_dates ld USING(document_id) INNER JOIN departments dp ON ld.transfer_department_id = dp.department_id INNER JOIN users u ON d.creator = u.user_id ORDER BY d.date_created DESC;"
 
     db.query(q, (err, data) => {
         res.set('Access-Control-Allow-Origin', '*')
