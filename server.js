@@ -340,7 +340,10 @@ app.post("/transfer", (req, res) => {
         complete ? 'C' : 'N'
     ]
 
-    const msg = '[' + req.body.uname + '] ' + (complete? 'commpleted' : 'received') + ' the document [' + val[0] + '].'
+    console.log(val)
+
+    console.log('logging')
+    const msg = '[' + req.body.uname + '] ' + (complete ? 'completed' : 'received') + ' the document [' + val[0] + '].'
 
     console.log('TRANSFER 1')
 
@@ -355,7 +358,14 @@ app.post("/transfer", (req, res) => {
 
     db.query(q, [uid, msg], (err, data) => {
         res.set('Access-Control-Allow-Origin', '*')
-        if (err) return res.json(err);
+        console.log('logging')
+        if (err) {
+            console.log('error')
+            console.log(err)
+            return res.json(err)
+        };
+        console.log('good')
+        console.log(data)
         return res.json(data)
     })
 })
