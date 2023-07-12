@@ -13,11 +13,11 @@ const app = express();
 app.use(express.json())
 app.use(cors())
 
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
     res.header("Access-Control-Allow-Origin", process.env.REQ_URL); // update to match the domain you will make the request from
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     next();
-  });
+});
 
 const db = mysql.createConnection({
     host: process.env.DB_HOST, // "localhost"
@@ -329,16 +329,19 @@ app.post("/add-initial-transfer", (req, res) => {
 app.post("/transfer", (req, res) => {
     const uid = req.body.uid
 
-    var q = "INSERT INTO `transfer_history` (`document_id`, `transfer_department_id`, `received_by`) VALUES (?)"
+    const complete = req.body.complete
+
+    var q = "INSERT INTO `transfer_history` (`document_id`, `transfer_department_id`, `received_by`, `completed`) VALUES (?)"
 
     const val = [
         req.body.id,
         req.body.origin,
-        req.body.creator
+        req.body.creator,
+        complete ? 'C' : 'N'
     ]
 
     const msg = '[' + req.body.uname + '] received the document [' + val[0] + '].'
-    
+
     console.log('TRANSFER 1')
 
     db.query(q, [val], (err, data) => {
@@ -367,7 +370,7 @@ app.get("/get-user-documents/:user", (req, res) => {
         res.set('Access-Control-Allow-Origin', '*')
         if (err) return res.json(err);
     })
-    
+
     var q = "DROP TEMPORARY TABLE IF EXISTS b;"
     db.query(q, (err, data) => {
         res.set('Access-Control-Allow-Origin', '*')
@@ -434,9 +437,9 @@ app.get("/get-history/:id", (req, res) => {
         }
     })
 
-    if (!pass) return 
+    if (!pass) return
 
-    var q = "SELECT th.transfer_id, th.received_by, CONCAT(u.name_given, ' ', IF(LENGTH(u.name_middle_initial), u.name_middle_initial, ''), IF(LENGTH(u.name_middle_initial), '. ', ''), u.name_last) as 'name', th.date_received, dc.name AS 'location', LAG(th.date_received, -1) OVER (ORDER BY th.date_received) AS 'date_departed' FROM transfer_history th INNER JOIN documents d ON d.document_id = th.document_id AND d.document_id = ? INNER JOIN users u ON u.user_id = th.received_by INNER JOIN departments dc ON dc.department_id = th.transfer_department_id ORDER BY date_received DESC"
+    var q = "SELECT th.completed, th.transfer_id, th.received_by, CONCAT(u.name_given, ' ', IF(LENGTH(u.name_middle_initial), u.name_middle_initial, ''), IF(LENGTH(u.name_middle_initial), '. ', ''), u.name_last) as 'name', th.date_received, dc.name AS 'location', LAG(th.date_received, -1) OVER (ORDER BY th.date_received) AS 'date_departed' FROM transfer_history th INNER JOIN documents d ON d.document_id = th.document_id AND d.document_id = ? INNER JOIN users u ON u.user_id = th.received_by INNER JOIN departments dc ON dc.department_id = th.transfer_department_id ORDER BY date_received DESC"
 
     db.query(q, id, (err, data) => {
         res.set('Access-Control-Allow-Origin', '*')
