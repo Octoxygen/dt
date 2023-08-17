@@ -55,9 +55,9 @@ app.get("/", (req, res) => {
     console.log(process.env.DB_USER)
 })
 
-app.get('/*', function (req, res) {
-    res.sendFile(path.join(__dirname, 'dist', 'index.html'));
-})
+// app.get('/*', function (req, res) {
+//     res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+// })
 
 app.get("/users", (req, res) => {
     const q = "SELECT COUNT(document_id) as 'count' from `documents`";
