@@ -24,6 +24,8 @@ app.use(function (req, res, next) {
     next();
 });
 
+app.use(express.static(path.join(__dirname, 'build')));
+
 const db = mysql.createConnection({
     host: process.env.DB_HOST, // "localhost"
     user: process.env.DB_USER, // "root"
@@ -52,6 +54,9 @@ app.get("/", (req, res) => {
     console.log(process.env.DB_HOST)
     console.log(process.env.DB_USER)
 })
+// app.get('/*', function (req, res) {
+//     res.sendFile(path.join(__dirname, 'build', 'index.html'));
+// })
 
 app.get("/users", (req, res) => {
     const q = "SELECT COUNT(document_id) as 'count' from `documents`";
