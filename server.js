@@ -836,6 +836,5 @@ app.get("/get-latest-location/:docID", (req, res) => {
 const port = process.env.PORT || 8900;
 
 app.listen(port, "0.0.0.0", () => {
-    console.log(__dirname);
     console.log("Connected to database");
 })
