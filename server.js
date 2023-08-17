@@ -839,6 +839,14 @@ app.get("/get-latest-location/:docID", (req, res) => {
     })
 })
 
+app.get("/*", function (req, res) {
+    res.sendFile(path.join(__dirname, "dist/index.html"), function (err) {
+        if (err) {
+            res.status(500).send(err);
+        }
+    });
+});
+
 const port = process.env.PORT || 8900;
 
 app.listen(port, "0.0.0.0", () => {
