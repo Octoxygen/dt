@@ -4,16 +4,16 @@ import cors from "cors";
 import dotenv from "dotenv";
 import nodemailer from "nodemailer";
 import crypto from "crypto"
-import path from 'path';
-import { fileURLToPath } from 'url';
+// import path from 'path';
+// import { fileURLToPath } from 'url';
 
 dotenv.config()
 
 const app = express();
 
-const __filename = fileURLToPath(import.meta.url);
+// const __filename = fileURLToPath(import.meta.url);
 
-const __dirname = path.dirname(__filename);
+// const __dirname = path.dirname(__filename);
 
 app.use(express.json())
 app.use(cors())
@@ -24,7 +24,7 @@ app.use(function (req, res, next) {
     next();
 });
 
-app.use(express.static(path.join(__dirname, 'dist')));
+// app.use(express.static(path.join(__dirname, 'dist')));
 
 const db = mysql.createConnection({
     host: process.env.DB_HOST, // "localhost"
@@ -856,6 +856,5 @@ app.get("/get-latest-location/:docID", (req, res) => {
 const port = process.env.PORT || 8900;
 
 app.listen(port, "0.0.0.0", () => {
-    console.log(__dirname);
     console.log("Connected to database");
 })
