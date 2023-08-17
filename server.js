@@ -833,6 +833,8 @@ app.get("/get-latest-location/:docID", (req, res) => {
     })
 })
 
-app.listen(8900, () => {
+const port = proces.env.PORT || 8900;
+
+app.listen(port, "0.0.0.0", () => {
     console.log("Connected to database");
 })
