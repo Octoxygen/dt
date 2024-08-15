@@ -551,7 +551,23 @@ app.get("/get-history/:id", (req, res) => {
 
     if (!pass) return
 
-    var q = "SELECT th.completed, th.transfer_id, th.received_by, CONCAT(u.name_given, ' ', IF(LENGTH(u.name_middle_initial), u.name_middle_initial, ''), IF(LENGTH(u.name_middle_initial), '. ', ''), u.name_last) as 'name', th.date_received, dc.name AS 'location', LAG(th.date_received, -1) OVER (ORDER BY th.date_received) AS 'date_departed' FROM transfer_history th INNER JOIN documents d ON d.document_id = th.document_id AND d.document_id = ? INNER JOIN users u ON u.user_id = th.received_by INNER JOIN departments dc ON dc.department_id = th.transfer_department_id ORDER BY date_received DESC"
+    var q = `SELECT 
+        th.completed, 
+        th.transfer_id, 
+        th.received_by,
+        CONCAT(u.name_given, ' ', IF(LENGTH(u.name_middle_initial), u.name_middle_initial, ''), IF(LENGTH(u.name_middle_initial), '. ', ''), u.name_last) as 'name', 
+        th.date_received, 
+        dc.name AS 'location', 
+        LAG(th.date_received, 1) OVER (ORDER BY th.date_received) AS 'date_departed' 
+
+    FROM transfer_history th 
+    INNER JOIN documents d 
+    ON d.document_id = th.document_id AND d.document_id = ?
+
+    INNER JOIN users u ON u.user_id = th.received_by 
+
+    INNER JOIN departments dc ON dc.department_id = th.transfer_department_id 
+    ORDER BY date_received DESC`
 
     db.query(q, id, (err, data) => {
         res.set('Access-Control-Allow-Origin', '*')
