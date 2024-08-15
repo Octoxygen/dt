@@ -419,20 +419,52 @@ app.get("/get-user-documents/:user", (req, res) => {
     })
 })
 
+// app.get("/get-all-documents", (req, res) => {
+//     var q = "DROP TEMPORARY TABLE IF EXISTS latest_dates;"
+//     db.query(q, (err, data) => {
+//         res.set('Access-Control-Allow-Origin', '*')
+//         if (err) return res.json(err);
+//     })
+
+//     var q = "CREATE TEMPORARY TABLE latest_dates SELECT * FROM transfer_history th GROUP BY th.document_id DESC;"
+//     db.query(q, (err, data) => {
+//         res.set('Access-Control-Allow-Origin', '*')
+//         if (err) return res.json(err);
+//     })
+
+//     q = "SELECT d.document_id, d.document_title, d.date_created, d.creator, CONCAT(u.name_given, ' ', IF(LENGTH(u.name_middle_initial), u.name_middle_initial, ''), IF(LENGTH(u.name_middle_initial), '. ', ''), u.name_last) as 'name', dp.name AS 'location', ld.received_by, ld.completed FROM documents d INNER JOIN latest_dates ld USING(document_id) INNER JOIN departments dp ON ld.transfer_department_id = dp.department_id INNER JOIN users u ON d.creator = u.user_id ORDER BY d.date_created DESC;"
+
+//     db.query(q, (err, data) => {
+//         res.set('Access-Control-Allow-Origin', '*')
+//         if (err) return res.json(err);
+//         return res.json(data)
+//     })
+// })
+
 app.get("/get-all-documents", (req, res) => {
-    var q = "DROP TEMPORARY TABLE IF EXISTS latest_dates;"
-    db.query(q, (err, data) => {
-        res.set('Access-Control-Allow-Origin', '*')
-        if (err) return res.json(err);
-    })
+    var q = `SELECT 
+        d.document_id,
+        d.document_title,
+        d.date_created,
+        d.creator,
+        CONCAT(u.name_given, ' ', IF(LENGTH(u.name_middle_initial), u.name_middle_initial, ''), IF(LENGTH(u.name_middle_initial), '. ', ''), u.name_last) as 'name',
+        dp.name AS 'location',
+        th.received_by,
+        th.completed
 
-    var q = "CREATE TEMPORARY TABLE latest_dates SELECT * FROM transfer_history th GROUP BY th.document_id DESC;"
-    db.query(q, (err, data) => {
-        res.set('Access-Control-Allow-Origin', '*')
-        if (err) return res.json(err);
-    })
+    FROM documents d
 
-    q = "SELECT d.document_id, d.document_title, d.date_created, d.creator, CONCAT(u.name_given, ' ', IF(LENGTH(u.name_middle_initial), u.name_middle_initial, ''), IF(LENGTH(u.name_middle_initial), '. ', ''), u.name_last) as 'name', dp.name AS 'location', ld.received_by, ld.completed FROM documents d INNER JOIN latest_dates ld USING(document_id) INNER JOIN departments dp ON ld.transfer_department_id = dp.department_id INNER JOIN users u ON d.creator = u.user_id ORDER BY d.date_created DESC;"
+    INNER JOIN (SELECT * 
+        FROM transfer_history th 
+        GROUP BY th.document_id
+        ORDER BY th.document_id DESC) 
+    AS th ON d.document_id = th.document_id
+
+    LEFT JOIN departments dp ON th.transfer_department_id = dp.department_id
+
+    LEFT JOIN users u ON d.creator = u.user_id
+
+    ORDER BY d.date_created DESC;`
 
     db.query(q, (err, data) => {
         res.set('Access-Control-Allow-Origin', '*')
