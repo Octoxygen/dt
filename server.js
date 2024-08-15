@@ -916,7 +916,22 @@ app.get("/get-statistics", (req, res) => {
         docCounts = data
     })
 
-    q = "SELECT t.transfer_id, t.document_id, t.transfer_department_id, t.date_received, LAG(t.date_received, -1) OVER ( PARTITION BY document_id ORDER BY date_received ) date_departed, t.completed FROM `transfer_history` t WHERE completed != 'C' ORDER BY `t`.`transfer_department_id` ASC, `t`.`document_id` ASC, `t`.`transfer_id` ASC;"
+    q = `SELECT 
+        t.transfer_id, 
+        t.document_id, 
+        t.transfer_department_id, 
+        t.date_received, 
+        LAG(t.date_received, 1) 
+            OVER (PARTITION BY document_id ORDER BY date_received) date_departed, 
+        t.completed 
+    FROM transfer_history t 
+    
+    WHERE completed != 'C' 
+    
+    ORDER BY 
+        t.transfer_department_id ASC, 
+        t.document_id ASC, 
+        t.transfer_id ASC;`
 
     var holdTime;
 
