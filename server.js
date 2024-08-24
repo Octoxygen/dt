@@ -381,43 +381,43 @@ app.post("/transfer", (req, res) => {
     })
 })
 
-app.get("/get-user-documents/:user", (req, res) => {
-    const user = req.params.user
+// app.get("/get-user-documents/:user", (req, res) => {
+//     const user = req.params.user
 
-    console.log(user)
+//     console.log(user)
 
-    var q = "DROP TEMPORARY TABLE IF EXISTS a;"
-    db.query(q, (err, data) => {
-        res.set('Access-Control-Allow-Origin', '*')
-        if (err) return res.json(err);
-    })
+//     var q = "DROP TEMPORARY TABLE IF EXISTS a;"
+//     db.query(q, (err, data) => {
+//         res.set('Access-Control-Allow-Origin', '*')
+//         if (err) return res.json(err);
+//     })
 
-    var q = "DROP TEMPORARY TABLE IF EXISTS b;"
-    db.query(q, (err, data) => {
-        res.set('Access-Control-Allow-Origin', '*')
-        if (err) return res.json(err);
-    })
+//     var q = "DROP TEMPORARY TABLE IF EXISTS b;"
+//     db.query(q, (err, data) => {
+//         res.set('Access-Control-Allow-Origin', '*')
+//         if (err) return res.json(err);
+//     })
 
-    var q = "CREATE TEMPORARY TABLE a SELECT th.document_id from transfer_history th INNER JOIN ( SELECT document_id FROM `transfer_history` WHERE received_by = ? GROUP BY document_id ) dx ON th.document_id = dx.document_id GROUP BY th.document_id;"
-    db.query(q, [user], (err, data) => {
-        res.set('Access-Control-Allow-Origin', '*')
-        if (err) return res.json(err);
-    })
+//     var q = "CREATE TEMPORARY TABLE a SELECT th.document_id from transfer_history th INNER JOIN ( SELECT document_id FROM `transfer_history` WHERE received_by = ? GROUP BY document_id ) dx ON th.document_id = dx.document_id GROUP BY th.document_id;"
+//     db.query(q, [user], (err, data) => {
+//         res.set('Access-Control-Allow-Origin', '*')
+//         if (err) return res.json(err);
+//     })
 
-    var q = "CREATE TEMPORARY TABLE b SELECT MAX(th.transfer_id) AS transfer_id, document_id FROM transfer_history th GROUP BY th.document_id ASC;"
-    db.query(q, [user], (err, data) => {
-        res.set('Access-Control-Allow-Origin', '*')
-        if (err) return res.json(err);
-    })
+//     var q = "CREATE TEMPORARY TABLE b SELECT MAX(th.transfer_id) AS transfer_id, document_id FROM transfer_history th GROUP BY th.document_id ASC;"
+//     db.query(q, [user], (err, data) => {
+//         res.set('Access-Control-Allow-Origin', '*')
+//         if (err) return res.json(err);
+//     })
 
-    q = "SELECT b.transfer_id, b.document_id, th.transfer_department_id, dp.name as 'location', th.received_by, CONCAT(tu.name_given, ' ', IF(LENGTH(tu.name_middle_initial), tu.name_middle_initial, ''), IF(LENGTH(tu.name_middle_initial), '. ', ''), tu.name_last) as 'receiver', th.date_received, d.document_title, d.date_created, d.creator, CONCAT(u.name_given, ' ', IF(LENGTH(u.name_middle_initial), u.name_middle_initial, ''), IF(LENGTH(u.name_middle_initial), '. ', ''), u.name_last) as 'name', th.completed FROM a INNER JOIN b ON a.document_id = b.document_id INNER JOIN transfer_history th ON th.transfer_id = b.transfer_id INNER JOIN documents d on d.document_id = b.document_id INNER JOIN users u on d.creator = u.user_id INNER JOIN users tu on tu.user_id = th.received_by INNER JOIN departments dp on dp.department_id = th.transfer_department_id ORDER BY th.date_received DESC;"
+//     q = "SELECT b.transfer_id, b.document_id, th.transfer_department_id, dp.name as 'location', th.received_by, CONCAT(tu.name_given, ' ', IF(LENGTH(tu.name_middle_initial), tu.name_middle_initial, ''), IF(LENGTH(tu.name_middle_initial), '. ', ''), tu.name_last) as 'receiver', th.date_received, d.document_title, d.date_created, d.creator, CONCAT(u.name_given, ' ', IF(LENGTH(u.name_middle_initial), u.name_middle_initial, ''), IF(LENGTH(u.name_middle_initial), '. ', ''), u.name_last) as 'name', th.completed FROM a INNER JOIN b ON a.document_id = b.document_id INNER JOIN transfer_history th ON th.transfer_id = b.transfer_id INNER JOIN documents d on d.document_id = b.document_id INNER JOIN users u on d.creator = u.user_id INNER JOIN users tu on tu.user_id = th.received_by INNER JOIN departments dp on dp.department_id = th.transfer_department_id ORDER BY th.date_received DESC;"
 
-    db.query(q, (err, data) => {
-        res.set('Access-Control-Allow-Origin', '*')
-        if (err) return res.json(err);
-        return res.json(data)
-    })
-})
+//     db.query(q, (err, data) => {
+//         res.set('Access-Control-Allow-Origin', '*')
+//         if (err) return res.json(err);
+//         return res.json(data)
+//     })
+// })
 
 app.get("/get-user-documents/:user", (req, res) => {
     const user = req.params.user;
