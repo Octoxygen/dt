@@ -560,7 +560,7 @@ app.get("/get-history/:id", (req, res) => {
         CONCAT(u.name_given, ' ', IF(LENGTH(u.name_middle_initial), u.name_middle_initial, ''), IF(LENGTH(u.name_middle_initial), '. ', ''), u.name_last) as 'name', 
         th.date_received, 
         dc.name AS 'location', 
-        LAG(th.date_received, 1) OVER (ORDER BY th.date_received) AS 'date_departed' 
+        LEAD(th.date_received, 1) OVER (ORDER BY th.date_received) AS 'date_departed' 
 
     FROM transfer_history th 
     INNER JOIN documents d 
@@ -923,7 +923,7 @@ app.get("/get-statistics", (req, res) => {
         t.document_id, 
         t.transfer_department_id, 
         t.date_received, 
-        LAG(t.date_received, 1) 
+        LEAD(t.date_received, 1) 
             OVER (PARTITION BY document_id ORDER BY date_received) date_departed, 
         t.completed 
     FROM transfer_history t 
