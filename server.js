@@ -757,7 +757,7 @@ app.put("/delete-department", (req, res) => {
         req.body.s_dept_name,
     ]
 
-    const msg = 'Administrator [' + req.body.uname + '] deleted the department [' + req.body.username + '].'
+    const msg = 'Administrator [' + req.body.uname + '] deleted the department [' + req.body.s_dept_name + '].'
 
     var q = "UPDATE departments SET status = 'D' WHERE name = ?;"
 
